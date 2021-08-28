@@ -67,6 +67,7 @@ done<<<"$FILESLIST"
 [ -n "$DebugFlag" ]&& echodebug N=$N
 
 [ $N = 1 ]||N=$(eval yad  --on-top --mouse --undecorated --skip-taskbar --close-on-unfocus --no-buttons  --form  $YadButtonLine)
+[ -z "$N" ] && N=1
 [ -n "$DebugFlag" ]&& echodebug N=$N
 [ -z "$FILESLIST" ]&&exit 1
 [ -n "$DebugFlag" ]&& echodebug FILESLIST="$FILESLIST"
