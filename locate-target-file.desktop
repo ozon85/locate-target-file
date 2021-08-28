@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=locate target file
+Comment=Open folder with target of symlink or desktop file
+Exec='locate-target-file' %f
+Icon=
+Path=
+Terminal=false
+StartupNotify=false
+MimeType=inode/directory;inode/symlink
+Name[ru_RU.UTF-8]=Расположение файла
