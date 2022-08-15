@@ -12,13 +12,16 @@ dbus-send --session --print-reply --dest=org.freedesktop.FileManager1 --type=met
 }
 
 function GetFILESLISTfromEXECLINE(){
-[ -n "$DebugFlag" ]&& echodebug GetFILESLISTfromEXECLINE EXECLINE="$EXECLINE"
+EVAL=$(eval "for word in $EXECLINE;do echo \$word;done")
+#[ -n "$DebugFlag" ]&& echodebug EVAL="$EVAL"
 FILESLIST=''
 while read A;do
   #[ -n "$DebugFlag" ]&& echodebug A="$A"
   [ -e "$A" ]|| A=`which 2>/dev/null "$A"`
-  [ -n "$A" ]&& FILESLIST=$FILESLIST$A$'\n'
+  [ -n "$A" ]&& FILESLIST="$FILESLIST""$A"$'\n'
+  #[ -n "$DebugFlag" ]&& echodebug FILESLIST="$FILESLIST"
 done <<<$(eval "for word in $EXECLINE;do echo \$word;done")
+echo "$FILESLIST" &>/dev/null # There is unknown bug, if variable FILESLIST have %f in end, script is end!
 }
 
 function FILESLISTfromDesktopFILE(){
@@ -41,18 +44,18 @@ echo '--field='\'"$1":btn\' \''bash --posix -c "kill -n 15 $YAD_PID;echo '"$2"\"
 [ -e "$1" ]||{ echo specify exist file;exit 1; }
 [ -d "$1" ]&&{ echo "you specify directory, exit";exit 1; }
 
-DebugFlag=y
+#DebugFlag=y
 
 FILE=$1;FILESLIST=''
 if [ -L "$FILE" ];then
  [ -n "$DebugFlag" ]&& echodebug 'get symlink'
  FILESLIST=`readlink -e "$FILE"`
-elif grep -i 'desktop$' <<<"$FILE";then
+elif grep -i 'desktop$' &>/dev/null <<<"$FILE";then
  [ -n "$DebugFlag" ]&& echodebug 'get desktop'
  FILESLISTfromDesktopFILE||exit $?
 fi
 [ -n "$DebugFlag" ]&& echodebug FILESLIST="$FILESLIST";
-[ -z "$FILESLIST" ]&&exit 1
+[ -z "$FILESLIST" ]&&{ echo FILESLIST' is empty!';exit 1; }
 
 FILESLIST="$(echo "$FILESLIST"|uniq)"
 [ -n "$DebugFlag" ]&& echodebug uniq FILESLIST="$FILESLIST"
@@ -66,10 +69,11 @@ done<<<"$FILESLIST"
 [ -n "$DebugFlag" ]&& echodebug YadButtonLine="$YadButtonLine"
 [ -n "$DebugFlag" ]&& echodebug N=$N
 
+which yad &>/dev/null||N=1
+
 [ $N = 1 ]||N=$(eval yad  --on-top --mouse --undecorated --skip-taskbar --close-on-unfocus --no-buttons  --form  $YadButtonLine)
-[ -z "$N" ] && N=1
+[ -z $N ]&&{ [ -n "$DebugFlag" ]&& echodebug cancel;exit 1; }
 [ -n "$DebugFlag" ]&& echodebug N=$N
-[ -z "$FILESLIST" ]&&exit 1
 [ -n "$DebugFlag" ]&& echodebug FILESLIST="$FILESLIST"
 FILE=`echo "$FILESLIST"|head -n $N|tail -n 1`
 ShowFILEAsDbus||OpenFILEFolder
